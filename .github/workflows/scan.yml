@@ -15,6 +15,7 @@ jobs:
         uses: crowdstrike/container-image-scan-action@v1.1.0
         with:
           falcon_client_id: "${{ secrets.FALCON_CLIENT_ID }}"
+          crowdstrike_region: us-2
           container_repository: docker.io/library/busybox
         env:
           FALCON_CLIENT_SECRET: "${{ secrets.FALCON_CLIENT_SECRET }}"
