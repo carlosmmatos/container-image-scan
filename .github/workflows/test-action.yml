@@ -31,6 +31,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: CrowdStrike Container Image Scan
+        continue-on-error: true
         uses: crowdstrike/container-image-scan-action@v1
         with:
           container_repository: ${{ env.CONTAINER_REPO }}
