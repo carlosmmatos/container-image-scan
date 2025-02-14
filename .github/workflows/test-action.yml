@@ -1,0 +1,45 @@
+name: Test container-image-scan-action
+
+on: workflow_dispatch
+
+env:
+  CONTAINER_REPO: quay.io/matosc15/falcon-ee
+  CONTAINER_TAG: latest
+  CONTAINER_REGISTRY: quay.io
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure docker is not running
+        run: |
+          sudo systemctl stop docker.service
+          sudo systemctl stop docker.socket
+
+      - name: Ensure podman socket is running
+        run: |
+          systemctl --user start podman.socket
+
+      - name: Podman Login
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: CrowdStrike Container Image Scan
+        uses: crowdstrike/container-image-scan-action@v1
+        with:
+          container_repository: ${{ env.CONTAINER_REPO }}
+          container_tag: ${{ env.CONTAINER_TAG }}
+          crowdstrike_region: us-2
+          falcon_client_id: ${{ secrets.FALCON_CLIENT_ID }}
+          json_report: /tmp/report.json
+        env:
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+
+      - name: Print report
+        run: cat /tmp/report.json | jq .
